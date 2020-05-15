@@ -1,30 +1,26 @@
-# code-with-quarkus project
+# Simple Openwhisk Quarkus Action
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This project build a docker container and bundles a Quarkus app inside of it. See the commands below to see how to test/deploy this sample.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+### Run in dev mode
+mvn quarkus:dev
 
-## Running the application in dev mode
+### Build the docker container
 
-You can run your application in dev mode that enables live coding using:
-```
-./mvnw quarkus:dev
-```
+mvn package
+docker build -t prpatel/quarkus-ow-demo .
+docker run -i --rm -p 8080:8080 prpatel/quarkus-ow-demo
 
-## Packaging and running the application
+### Test the endpoint locally
+curl -v -H "Content-type: application/json" -d "{\"name\":\"Hiya\"}" -X POST http://localhost:8080/init
+curl -v -H "Content-type: application/json" -d "{\"name\":\"Hiya\"}" -X POST http://localhost:8080/run
 
-The application can be packaged using `./mvnw package`.
-It produces the `code-with-quarkus-1.0.0-SNAPSHOT-runner.jar` file in the `/target` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/lib` directory.
+### Push and test to IBM Cloud Functions
 
-The application is now runnable using `java -jar target/code-with-quarkus-1.0.0-SNAPSHOT-runner.jar`.
+ibmcloud fn action create quarkowdirect --docker prpatel/quarkus-ow-demo:latest --web true
 
-## Creating a native executable
+If you want to invoke it from the browser:
+ibmcloud fn action get quarkowdirect --url
 
-You can create a native executable using: `./mvnw package -Pnative`.
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using: `./mvnw package -Pnative -Dquarkus.native.container-build=true`.
-
-You can then execute your native executable with: `./target/code-with-quarkus-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/building-native-image.# simple-quarkus-openwhisk-action
+Invoke from command line:
+ibmcloud fn action invoke quarkowdirect  --result
